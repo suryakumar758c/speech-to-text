@@ -13,7 +13,8 @@
   const speechStartBtn = getElementById("speech-start");
   const speechStopBtn = getElementById("speech-stop");
   const speechClearBtn = getElementById("speech-clear");
-  const readTextBtn = readTextBtn;
+  const readTextBtn = getElementById("read-text");
+  let isMikeStarted = false;
 
   // speech to text
   if (
@@ -25,20 +26,40 @@
     const mikeStatus = getElementById("mike-status");
 
     const stopMike = () => {
-      mikeStatus.innerText = "stopped";
-      mikeStatus.classList.add("text-danger");
-      speechRecognition.stop();
+      if (isMikeStarted) {
+        mikeStatus.innerText = "stopped";
+        mikeStatus.classList.add("text-danger");
+        mikeStatus.classList.remove("text-success");
+        isMikeStarted = false;
+        speechRecognition.stop();
+        console.log("mike stoped");
+      }
     };
 
     const startMike = () => {
-      mikeStatus.innerText = "listening";
-      mikeStatus.classList.add("text-success");
-      speechRecognition.start();
+      if (!isMikeStarted) {
+        mikeStatus.innerText = "listening";
+        mikeStatus.classList.add("text-success");
+        mikeStatus.classList.remove("text-danger");
+        isMikeStarted = true;
+        speechRecognition.start();
+        console.log("mike listening");
+      }
     };
 
     speechRecognition.onerror = (error) => {
       console.log({ error });
       stopMike();
+    };
+
+    speechRecognition.onaudiostart = () => {
+      console.log("audio started", { isMikeStarted });
+      isMikeStarted = true;
+    };
+
+    speechRecognition.onaudioend = () => {
+      console.log("audio ended", { isMikeStarted });
+      isMikeStarted = false;
     };
 
     speechRecognition.onresult = (event) => {
@@ -48,18 +69,15 @@
 
     speechRecognition.onspeechend = () => {
       setTimeout(() => {
-        console.log("mike stoped");
         stopMike();
       }, 2000);
     };
 
     speechStartBtn.onclick = () => {
-      console.log("mike listening");
       startMike();
     };
 
     speechStopBtn.onclick = () => {
-      console.log("mike stoped");
       stopMike();
     };
 
